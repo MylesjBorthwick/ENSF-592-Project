@@ -1,7 +1,8 @@
-from tkinter import Tk, Label, Button, ttk
+from tkinter import Tk, Label, Button, ttk, LEFT, RIGHT, Frame, WORD
 import folium
 import tkinter as tk
 from pymongo import MongoClient
+import tkinter.scrolledtext as tkst
 
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
@@ -11,36 +12,47 @@ class MyFirstGUI:
         self.master = master
         master.title("TrafficApp")
 
-        self.label = Label(master, text="Type")
+        leftframe = Frame(master)
+        leftframe.pack(side = LEFT)
+
+        rightframe = Frame(master)
+        rightframe.pack(side = RIGHT)
+
+        self.textbox = tkst.ScrolledText(rightframe, height=10, width = 40)
+        self.textbox.config(wrap=WORD)
+        self.textbox.pack()
+        
+
+        self.label = Label(leftframe, text="Type")
         self.label.pack()
 
         Type = tk.StringVar()
         Year = tk.StringVar()
-        self.typeCombox = ttk.Combobox(master, width=12, textvariable=Type)
+        self.typeCombox = ttk.Combobox(leftframe, width=12, textvariable=Type)
         
         self.typeCombox['values']=("Traffic Volume", "Traffic Incidents")
         self.typeCombox.pack()
 
-        self.label2 = Label(master, text="Year")
+        self.label2 = Label(leftframe, text="Year")
         self.label2.pack()
 
-        self.yearCombox = ttk.Combobox(master, width=12, textvariable=Year)
+        self.yearCombox = ttk.Combobox(leftframe, width=12, textvariable=Year)
         self.yearCombox['values']=("2018", "2017", "2016")
         self.yearCombox.pack()
 
-        self.greet_button = Button(master, text="Read", command=self.read)
+        self.greet_button = Button(leftframe, text="Read", command=self.read)
         self.greet_button.pack()
 
-        self.close_button = Button(master, text="Sort")
+        self.close_button = Button(leftframe, text="Sort")
         self.close_button.pack()
 
-        self.greet_button = Button(master, text="Analysis")
+        self.greet_button = Button(leftframe, text="Analysis")
         self.greet_button.pack()
 
-        self.close_button = Button(master, text="Map")
+        self.close_button = Button(leftframe, text="Map")
         self.close_button.pack()
 
-        self.close_button = Button(master, text="Close", command=master.quit)
+        self.close_button = Button(leftframe, text="Close", command=master.quit)
         self.close_button.pack()
 
     def greet(self):
@@ -55,10 +67,19 @@ class MyFirstGUI:
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
                 flow2018 = trafficdb["TrafficFlow2018"]
+                for x in flow2018.find({},{"_id":0, "volume":1}):
+                    self.textbox.insert(tk.END,str(x))
+                    self.textbox.insert(tk.END, '\n')
             elif(self.yearCombox.get() == "2017"):
                 flow2017= trafficdb["TrafficFlow2017"]
+                for x in flow2017.find({},{"_id":0, "volume":1}):
+                    self.textbox.insert(tk.END,str(x))
+                    self.textbox.insert(tk.END, '\n')
             elif(self.yearCombox.get() == "2016"):
                 flow2016= trafficdb["TrafficFlow2016"]
+                for x in flow2016.find({},{"_id":0, "volume":1}):
+                    self.textbox.insert(tk.END,str(x))
+                    self.textbox.insert(tk.END, '\n')
 
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
@@ -69,7 +90,7 @@ class MyFirstGUI:
                 incidents2016 = trafficdb["TrafficIncidents2016"]
         
         
-        
+    #TODO: Implement sort into gui
 
 
 root =Tk()
