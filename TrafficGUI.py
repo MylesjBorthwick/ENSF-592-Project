@@ -4,6 +4,7 @@ import tkinter as tk
 from pymongo import MongoClient
 import tkinter.scrolledtext as tkst
 from pandastable import Table
+import pandas as pd
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
 class MyFirstGUI:
@@ -18,6 +19,7 @@ class MyFirstGUI:
         rightframe = Frame(master)
         rightframe.pack(side = RIGHT)
 
+        #tree = ttk.Treeview(rightframe,)
         self.textbox = tkst.ScrolledText( height=10, width = 40)
         self.textbox.config(wrap=WORD)
         self.textbox.pack(expand = 1, fill = 'both')
@@ -61,30 +63,34 @@ class MyFirstGUI:
 
     #Reads corresponding collection based on combox selections
     def read(self):
+        pd.set_option('display.max_rows',None)
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
         trafficdb = myclient["TrafficData"]
-
         
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
                 flow2018 = trafficdb["TrafficFlow2018"]
+                flowdata2018 = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0})]
+                flowtable2018 = pd.DataFrame(flowdata2018)
                 self.textbox.delete("1.0","end")
-                #for x in flow2018.find({},{"_id": 0,"SECNAME":1,"Shape_Leng":1,"volume":1}).sort("volume", -1):
-                for x in flow2018.find({},{"_id": 0,"SECNAME":1,"Shape_Leng":1,"volume":1}):
-                    self.textbox.insert(tk.END,str(x))
-                    self.textbox.insert(tk.END, '\n')
+                self.textbox.insert(tk.END,str(flowtable2018))
+                self.textbox.insert(tk.END, '\n')
             elif(self.yearCombox.get() == "2017"):
                 self.textbox.delete("1.0","end")
                 flow2017= trafficdb["TrafficFlow2017"]
-                for x in flow2017.find({},{"_id":0,"segment_name":1,"length_m":1, "volume":1}):
-                    self.textbox.insert(tk.END,str(x))
-                    self.textbox.insert(tk.END, '\n')
+                flowdata2017 = [data for data in flow2017.find({},{"_id": 0, "year":0,"multilinestring":0})]
+                flowtable2017 = pd.DataFrame(flowdata2017)
+                self.textbox.insert(tk.END,str(flowtable2017))
+                self.textbox.insert(tk.END, '\n')
             elif(self.yearCombox.get() == "2016"):
                 self.textbox.delete("1.0","end")
                 flow2016= trafficdb["TrafficFlow2016"]
-                for x in flow2016.find({},{"_id":0,"SECNAME":1,"Shape_Leng":1,"volume":1}):
-                    self.textbox.insert(tk.END,str(x))
-                    self.textbox.insert(tk.END, '\n')
+                flowdata2016 = [data for data in flow2016.find({},{"_id": 0, "year":0,"multilinestring":0})]
+                flowtable2016 = pd.DataFrame(flowdata2016)
+                self.textbox.insert(tk.END,str(flowtable2016))
+                self.textbox.insert(tk.END, '\n')
+                
+                    
 
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
@@ -96,31 +102,33 @@ class MyFirstGUI:
 
     
     def sort(self):
+        pd.set_option('display.max_rows',None)
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
         trafficdb = myclient["TrafficData"]
-
         
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
                 flow2018 = trafficdb["TrafficFlow2018"]
+                flowdata2018 = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1)]
+                flowtable2018 = pd.DataFrame(flowdata2018)
                 self.textbox.delete("1.0","end")
-                #for x in flow2018.find({},{"_id": 0,"SECNAME":1,"Shape_Leng":1,"volume":1}).sort("volume", -1):
-                for x in flow2018.find({},{"_id": 0,"SECNAME":1,"Shape_Leng":1,"volume":1}).sort("volume", -1):
-                    self.textbox.insert(tk.END,str(x))
-                    self.textbox.insert(tk.END, '\n')
+                self.textbox.insert(tk.END,str(flowtable2018))
+                self.textbox.insert(tk.END, '\n')
             elif(self.yearCombox.get() == "2017"):
                 self.textbox.delete("1.0","end")
                 flow2017= trafficdb["TrafficFlow2017"]
-                for x in flow2017.find({},{"_id":0,"segment_name":1,"length_m":1, "volume":1}).sort("volume", -1):
-                    self.textbox.insert(tk.END,str(x))
-                    self.textbox.insert(tk.END, '\n')
+                flowdata2017 = [data for data in flow2017.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1)]
+                flowtable2017 = pd.DataFrame(flowdata2017)
+                self.textbox.insert(tk.END,str(flowtable2017))
+                self.textbox.insert(tk.END, '\n')
             elif(self.yearCombox.get() == "2016"):
                 self.textbox.delete("1.0","end")
                 flow2016= trafficdb["TrafficFlow2016"]
-                for x in flow2016.find({},{"_id":0,"SECNAME":1,"Shape_Leng":1, "volume":1}).sort("volume", -1):
-                    self.textbox.insert(tk.END,str(x))
-                    self.textbox.insert(tk.END, '\n')
-
+                flowdata2016 = [data for data in flow2016.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1)]
+                flowtable2016 = pd.DataFrame(flowdata2016)
+                self.textbox.insert(tk.END,str(flowtable2016))
+                self.textbox.insert(tk.END, '\n')
+                
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
                 incidents2018 = trafficdb["TrafficIncidents2018"]
@@ -130,7 +138,7 @@ class MyFirstGUI:
                 incidents2016 = trafficdb["TrafficIncidents2016"]
 
     
-    #TODO: Implement sort into gui
+    
 
 
 root =Tk()
