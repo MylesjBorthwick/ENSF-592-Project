@@ -22,9 +22,16 @@ sortedFlow2018 = flow2018.find({},{"_id": 0,"volume":1}).sort("volume", -1)
 sortedFlow2017 = flow2017.find({},{"_id": 0,"volume":1}).sort("volume", -1)
 sortedFlow2016 = flow2016.find({},{"_id": 0,"volume":1}).sort("volume", -1)
 
+
 #Print top 30 volumes
-for x in sortedFlow2018[0:30]:
-    print(x)
+totalVolume2018 = sum(sortedFlow2018)
+totalVolume2017 = sum([row[0] for row in sortedFlow2017.fetchall()])
+totalVolume2016 = sum([row[0] for row in sortedFlow2016.fetchall()])
+
+
+
+print(totalVolume2018)
+
 
 
 #TODO Sort collections by volume or incidents

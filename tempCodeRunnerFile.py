@@ -1,1 +1,1 @@
-find_one()
+for x in flow2016.find({},{"_id":0, "volume":1}):
