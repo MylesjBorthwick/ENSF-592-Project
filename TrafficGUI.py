@@ -5,6 +5,8 @@ from pymongo import MongoClient
 import tkinter.scrolledtext as tkst
 from pandastable import Table
 import pandas as pd
+import locale
+
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
 class MyFirstGUI:
@@ -16,13 +18,25 @@ class MyFirstGUI:
         leftframe = Frame(master)
         leftframe.pack(side = LEFT)
 
-        rightframe = Frame(master)
-        rightframe.pack(side = RIGHT)
+        self.rightframe = Frame(master)
+        self.rightframe.pack(side = RIGHT)
 
         #tree = ttk.Treeview(rightframe,)
-        self.textbox = tkst.ScrolledText( height=10, width = 40)
-        self.textbox.config(wrap=WORD)
-        self.textbox.pack(expand = 1, fill = 'both')
+        #self.textbox = tkst.ScrolledText( height=10, width = 40)
+        #self.textbox.config
+        #self.textbox.config(wrap=WORD)
+        #self.textbox.pack(expand = 1, fill = 'both')
+        self.textbox = tk.Text(self.rightframe,width=40,height=10,wrap="none")
+        self.textvsb = tk.Scrollbar(self.rightframe, orient="vertical", command=self.textbox.yview)
+        self.texthsb = tk.Scrollbar(self.rightframe, orient="horizontal", command=self.textbox.xview)
+        self.textbox.configure(yscrollcommand=self.textvsb.set, xscrollcommand=self.texthsb.set)
+        self.textbox.grid(row=0, column=0, sticky="nsew")
+        self.textvsb.grid(row=0, column=1, sticky="ns")
+        self.texthsb.grid(row=1, column=0, sticky="ew")
+
+        self.rightframe.grid_rowconfigure(0, weight=1)
+        self.rightframe.grid_columnconfigure(0, weight=1)
+        self.rightframe.pack(side="top", fill="both", expand=True)
         #self.table=Table(rightframe)
         #self.table.show()
 
@@ -58,12 +72,11 @@ class MyFirstGUI:
         self.close_button = Button(leftframe, text="Close", command=master.quit)
         self.close_button.pack()
 
-    def greet(self):
-        print("Greetings!")
 
     #Reads corresponding collection based on combox selections
     def read(self):
-        pd.set_option('display.max_rows',None)
+        pd.set_option('display.max_rows',None,'display.max_columns',10)
+        pd.options.display.width=None
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
         trafficdb = myclient["TrafficData"]
         
@@ -95,10 +108,25 @@ class MyFirstGUI:
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
                 incidents2018 = trafficdb["TrafficIncidents2018"]
+                incidentdata2018 = [data for data in incidents2018.find({},{"_id": 0, "year":0,"id":0,"Longitude":0,"Latitude":0})]
+                incidenttable2018 = pd.DataFrame(incidentdata2018)
+                self.textbox.delete("1.0","end")
+                self.textbox.insert(tk.END,str(incidenttable2018))
+                self.textbox.insert(tk.END, '\n')
             elif(self.yearCombox.get() == "2017"):
                 incidents2017 = trafficdb["TrafficIncidents2017"]
+                incidentdata2017 = [data for data in incidents2017.find({},{"_id": 0, "year":0})]
+                incidenttable2017 = pd.DataFrame(incidentdata2017)
+                self.textbox.delete("1.0","end")
+                self.textbox.insert(tk.END,str(incidenttable2017))
+                self.textbox.insert(tk.END, '\n')
             elif(self.yearCombox.get() == "2016"):
                 incidents2016 = trafficdb["TrafficIncidents2016"]
+                incidentdata2016 = [data for data in incidents2016.find({},{"_id": 0, "year":0})]
+                incidenttable2016 = pd.DataFrame(incidentdata2016)
+                self.textbox.delete("1.0","end")
+                self.textbox.insert(tk.END,str(incidenttable2016))
+                self.textbox.insert(tk.END, '\n')
 
     
     def sort(self):
