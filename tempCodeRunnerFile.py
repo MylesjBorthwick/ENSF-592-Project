@@ -1,1 +1,1 @@
-.sort("volume",-1)
+{"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } },
