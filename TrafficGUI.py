@@ -7,6 +7,7 @@ from pandastable import Table
 import pandas as pd
 import locale
 
+
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
 class MyFirstGUI:
@@ -33,7 +34,6 @@ class MyFirstGUI:
         self.textbox.grid(row=0, column=0, sticky="nsew")
         self.textvsb.grid(row=0, column=1, sticky="ns")
         self.texthsb.grid(row=1, column=0, sticky="ew")
-
         self.rightframe.grid_rowconfigure(0, weight=1)
         self.rightframe.grid_columnconfigure(0, weight=1)
         self.rightframe.pack(side="top", fill="both", expand=True)
@@ -132,7 +132,7 @@ class MyFirstGUI:
     def sort(self):
         pd.set_option('display.max_rows',None)
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
-        trafficdb = myclient["TrafficData"]
+        trafficdb = myclient.TrafficData
         
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
@@ -160,12 +160,43 @@ class MyFirstGUI:
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
                 incidents2018 = trafficdb["TrafficIncidents2018"]
+                incidents2018 = list(incidents2018.aggregate([
+                    {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
+                    {"$sort": {"count" : -1} },
+                       
+                ]))
+                incidents2018 = [data for data in incidents2018]
+                incidents2018 = pd.DataFrame(incidents2018)
+                self.textbox.delete("1.0","end")
+                self.textbox.insert(tk.END,str(incidents2018))
+                self.textbox.insert(tk.END, '\n')
+                
             elif(self.yearCombox.get() == "2017"):
                 incidents2017 = trafficdb["TrafficIncidents2017"]
+                #incidentdata2016 = [data for data in incidents2016.find({},{"_id": 0, "year":0})]
+                incidents2017 = list(incidents2017.aggregate([
+                    {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
+                    {"$sort": {"count" : -1} },
+                       
+                ]))
+                incidents2017 = [data for data in incidents2017]
+                incidents2017 = pd.DataFrame(incidents2017)
+                self.textbox.delete("1.0","end")
+                self.textbox.insert(tk.END,str(incidents2017))
+                self.textbox.insert(tk.END, '\n')
             elif(self.yearCombox.get() == "2016"):
-                incidents2016 = trafficdb["TrafficIncidents2016"]
-
-    
+                incidents2016 = trafficdb.TrafficIncidents2016
+                #incidentdata2016 = [data for data in incidents2016.find({},{"_id": 0, "year":0})]
+                incidents2016 = list(incidents2016.aggregate([
+                    {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
+                    {"$sort": {"count" : -1} },
+                       
+                ]))
+                incidentdata2016 = [data for data in incidents2016]
+                datatable2016 = pd.DataFrame(incidentdata2016)
+                self.textbox.delete("1.0","end")
+                self.textbox.insert(tk.END,str(datatable2016))
+                self.textbox.insert(tk.END, '\n')
     
 
 
