@@ -3,9 +3,10 @@ import folium
 import tkinter as tk
 from pymongo import MongoClient
 import tkinter.scrolledtext as tkst
-from pandastable import Table
+#from pandastable import Table
 import pandas as pd
 import locale
+import Map as mappy
 
 
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
@@ -61,11 +62,50 @@ class MyFirstGUI:
         self.greet_button = Button(leftframe, text="Analysis")
         self.greet_button.pack()
 
-        self.close_button = Button(leftframe, text="Map")
+        self.close_button = Button(leftframe, text="Map", command = self.generate_map)
         self.close_button.pack()
 
         self.close_button = Button(leftframe, text="Close", command=master.quit)
         self.close_button.pack()
+        self.msg_box = tk.Text(leftframe,width=10,height=5,wrap="none")
+        self.msg_box.pack()
+ 
+        
+
+
+
+    def generate_map(self):
+        my_map = mappy.Map()
+    
+        myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
+        trafficdb = myclient["TrafficData"] #all the databases are in here. 
+
+        if(self.typeCombox.get() == "Traffic Volume"):
+            if(self.yearCombox.get() == "2018"):
+                flow = trafficdb["TrafficFlow2018"]
+            elif(self.yearCombox.get() == "2017"):
+                flow = trafficdb["TrafficFlow2017"]
+            elif(self.yearCombox.get() == "2016"):
+                flow = trafficdb["TrafficFlow2016"]
+            for data in flow.find({},{"_id": 0, "year":0}):
+                my_map.add_line_coordinates(data['multilinestring'],'section: '+ data['SECNAME'] +' volume: '+str(data['volume']),data['volume'])
+       
+        elif(self.typeCombox.get() == "Traffic Incidents"):
+            if(self.yearCombox.get() == "2018"): 
+                incidents = trafficdb["TrafficIncidents2018"] #grabbing a data collection
+   
+            elif(self.yearCombox.get() == "2017"):
+                incidents = trafficdb["TrafficIncidents2017"] #grabbing a data collection
+ 
+            elif(self.yearCombox.get() == "2016"):
+                incidents = trafficdb["TrafficIncidents2016"] #grabbing a data collection
+
+            for data in incidents.find({},{'Count':0,'location':0, 'QUADRANT':0,'MODIFIED_DT':0, "_id": 0, "year":0,"id":0,'START_DT':0}):
+                my_map.add_marker(data['Latitude'],data['Longitude'],data['INCIDENT INFO']+': '+data['DESCRIPTION'])
+            
+        my_map.save_map()
+
+ 
 
 
     #Reads corresponding collection based on combox selections
@@ -73,13 +113,13 @@ class MyFirstGUI:
         pd.set_option('display.max_rows',None,'display.max_columns',10)
         pd.options.display.width=None
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
-        trafficdb = myclient["TrafficData"]
+        trafficdb = myclient["TrafficData"] #all the databases are in here. 
         
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
-                flow2018 = trafficdb["TrafficFlow2018"]
-                flowdata2018 = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0})]
-                flowtable2018 = pd.DataFrame(flowdata2018)
+                flow2018 = trafficdb["TrafficFlow2018"] #grabbing a data collection
+                flowdata2018 = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0})] #pull data from collection
+                flowtable2018 = pd.DataFrame(flowdata2018) #formats collection 
                 self.textbox.delete("1.0","end")
                 self.textbox.insert(tk.END,str(flowtable2018))
                 self.textbox.insert(tk.END, '\n')
