@@ -53,20 +53,20 @@ class MyFirstGUI:
         self.yearCombox['values']=("2018", "2017", "2016")
         self.yearCombox.pack()
 
-        self.greet_button = Button(leftframe, text="Read", command=self.read)
-        self.greet_button.pack()
+        self.read_button = Button(leftframe, text="Read", command=self.read)
+        self.read_button.pack()
 
         self.sort_button = Button(leftframe, text="Sort", command=self.sort)
         self.sort_button.pack()
 
-        self.greet_button = Button(leftframe, text="Analysis")
-        self.greet_button.pack()
+        self.analysis_button = Button(leftframe, text="Analysis")
+        self.analysis_button.pack()
 
-        self.close_button = Button(leftframe, text="Map", command = self.generate_map)
-        self.close_button.pack()
+        self.map_button = Button(leftframe, text="Map", command = self.generate_map)
+        self.map_button.pack()
 
-        self.close_button = Button(leftframe, text="Close", command=master.quit)
-        self.close_button.pack()
+        self.statustitle = Label(leftframe,text="Read Status")
+        self.statustitle.pack()
         self.msg_box = tk.Text(leftframe,width=10,height=5,wrap="none")
         self.msg_box.pack()
  
@@ -252,8 +252,70 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
     
+    def getMax(self):
+        myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
+        trafficdb = myclient.TrafficData
+        
+        if(self.typeCombox.get() == "Traffic Volume"):
+            if(self.yearCombox.get() == "2018"):
+                flow2018 = trafficdb["TrafficFlow2018"]
+                maxflow = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
+                maxflow = [document["volume"] for document in maxflow]
+                return maxflow([0])
+                
 
-
+            elif(self.yearCombox.get() == "2017"):
+                flow2017= trafficdb["TrafficFlow2017"]
+                maxflow = [data for data in flow2017.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
+                maxflow = [document["volume"] for document in maxflow]
+                return maxflow([0])
+                
+                
+            elif(self.yearCombox.get() == "2016"):
+                
+                flow2016= trafficdb["TrafficFlow2016"]
+                maxflow = [data for data in flow2016.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
+                maxflow = [document["volume"] for document in maxflow]
+                return maxflow([0])
+                
+                
+        elif (self.typeCombox.get() == "Traffic Incidents"):
+            if(self.yearCombox.get() == "2018"):
+                incidents = trafficdb["TrafficIncidents2018"]
+                incidents = list(incidents.aggregate([
+                    {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
+                    {"$sort": {"count" : -1} },
+                ]))
+                incidentmax = [data for data in incidents]
+                incidentmax = [document["count"] for document in incidentmax]
+                return incidentmax[0]
+                
+               
+                
+            elif(self.yearCombox.get() == "2017"):
+                incidents = trafficdb["TrafficIncidents2017"]
+                incidents = list(incidents.aggregate([
+                    {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
+                    {"$sort": {"count" : -1} },
+                ]))
+                incidentmax = [data for data in incidents]
+                incidentmax = [document["count"] for document in incidentmax]
+                return incidentmax[0]
+                
+               
+                
+            elif(self.yearCombox.get() == "2016"):
+                incidents = trafficdb.TrafficIncidents2016
+                incidents = list(incidents.aggregate([
+                    {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
+                    {"$sort": {"count" : -1} },
+                ]))
+                incidentmax = [data for data in incidents]
+                incidentmax = [document["count"] for document in incidentmax]
+                return incidentmax[0]
+               
+                
+        
 root =Tk()
 my_gui = MyFirstGUI(root)
 root.mainloop()

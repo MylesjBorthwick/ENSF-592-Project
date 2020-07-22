@@ -123,7 +123,7 @@ def read(self):
                 incidents = [data for data in incidents]
                 incidents = pd.DataFrame(incidents)
                 self.textbox.configure(state = 'normal')
-                self.textbox.delete("1.0","end")
+                self.textbox.delete("1.0","end")a   
                 self.textbox.insert(tk.END,str(incidents))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
