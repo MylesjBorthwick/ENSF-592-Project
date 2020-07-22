@@ -59,7 +59,8 @@ class Map:
         self.html_map.save('map.html')
         new = 2 # open in a new tab, if possible
         # open an HTML file on my own (Windows) computer
-        url = "file://C:/Users/Ken/Desktop/ENSF592/Project/ENSF-592-Project/map.html" #need to add path
+        #url = "file://C:/Users/Ken/Desktop/ENSF592/Project/ENSF-592-Project/map.html" #need to add path
+        url = "file://C:/Users/Myles/Documents/Masters/ENSF-592/Traffic Project/Traffic Project 592/ENSF-592-Project/map.html"
         webbrowser.open(url,new=new) #easier to use, but no capture functinality... 
 
             

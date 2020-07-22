@@ -70,9 +70,6 @@ class MyFirstGUI:
         self.msg_box = tk.Text(leftframe,width=10,height=5,wrap="none")
         self.msg_box.pack()
  
-        
-
-
 
     def generate_map(self):
         my_map = mappy.Map()
@@ -115,6 +112,7 @@ class MyFirstGUI:
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
         trafficdb = myclient["TrafficData"] #all the databases are in here. 
         
+        #handle volume selection
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
                 flow2018 = trafficdb["TrafficFlow2018"] #grabbing a data collection
@@ -124,6 +122,8 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(flowtable2018))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
             elif(self.yearCombox.get() == "2017"):
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
@@ -133,6 +133,8 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(flowtable2017))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
             elif(self.yearCombox.get() == "2016"):
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
@@ -142,9 +144,10 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(flowtable2016))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
                 
-                    
-
+        #Handle Incident selection        
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
                 incidents2018 = trafficdb["TrafficIncidents2018"]
@@ -155,6 +158,8 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(incidenttable2018))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
             elif(self.yearCombox.get() == "2017"):
                 incidents2017 = trafficdb["TrafficIncidents2017"]
                 incidentdata2017 = [data for data in incidents2017.find({},{"_id": 0, "year":0})]
@@ -164,6 +169,8 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(incidenttable2017))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
             elif(self.yearCombox.get() == "2016"):
                 incidents2016 = trafficdb["TrafficIncidents2016"]
                 incidentdata2016 = [data for data in incidents2016.find({},{"_id": 0, "year":0})]
@@ -173,14 +180,16 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(incidenttable2016))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
 
-    
+    #Sorts selected dataset and appends the sorted list to textbox
     def sort(self):
         pd.set_option('display.max_rows',None)
         pd.set_option('display.max_colwidth',90)
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
         trafficdb = myclient.TrafficData
-        
+        #Handle volume selection based on year in combox
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
                 flow2018 = trafficdb["TrafficFlow2018"]
@@ -191,6 +200,8 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(flowtable2018))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
             elif(self.yearCombox.get() == "2017"):
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
@@ -200,6 +211,9 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(flowtable2017))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
+                
             elif(self.yearCombox.get() == "2016"):
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
@@ -209,7 +223,9 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(flowtable2016))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
-                
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
+        #Handle Incident selection        
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
                 incidents = trafficdb["TrafficIncidents2018"]
@@ -224,6 +240,8 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(incidents))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
                 
             elif(self.yearCombox.get() == "2017"):
                 incidents = trafficdb["TrafficIncidents2017"]
@@ -238,6 +256,8 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(incidents))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
             elif(self.yearCombox.get() == "2016"):
                 incidents = trafficdb.TrafficIncidents2016
                 incidents = list(incidents.aggregate([
@@ -251,11 +271,14 @@ class MyFirstGUI:
                 self.textbox.insert(tk.END,str(incidents))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
     
+    #Returns max value for dataset based on combox selections
     def getMax(self):
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
         trafficdb = myclient.TrafficData
-        
+        #Handle volume selection based on year
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
                 flow2018 = trafficdb["TrafficFlow2018"]
@@ -278,7 +301,7 @@ class MyFirstGUI:
                 maxflow = [document["volume"] for document in maxflow]
                 return maxflow([0])
                 
-                
+        #Handle Incident selection based on year     
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
                 incidents = trafficdb["TrafficIncidents2018"]
