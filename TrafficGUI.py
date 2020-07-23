@@ -15,10 +15,9 @@ from matplotlib.figure import Figure
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
 #Traffic GUI class creates interface and maps commands to GUI elements
-class TrafficGUI:
+class TrafficApp:
     def __init__(self, master):
         
-       
         self.master = master
         master.title("TrafficApp")
         self.matplot_active = False
@@ -30,14 +29,16 @@ class TrafficGUI:
         leftframe = Frame(master)
         leftframe.pack(side = LEFT)
 
-        #Create
+        #Create right Frame in GUI Window
         self.rightframe = Frame(master)
         self.rightframe.pack(side = RIGHT)
 
-
-        self.textbox = tk.Text(self.rightframe,width=100,height=30,wrap="none")
+        #Create text field used to display read and sort data
+        self.textbox = tk.Text(self.rightframe,width=150,height=40,wrap="none")
+        #Create scrollbars for text window for data navigation
         self.textvsb = tk.Scrollbar(self.rightframe, orient="vertical", command=self.textbox.yview)
         self.texthsb = tk.Scrollbar(self.rightframe, orient="horizontal", command=self.textbox.xview)
+        #Add scrollbars to textbox and pack into rightframe
         self.textbox.configure(yscrollcommand=self.textvsb.set, xscrollcommand=self.texthsb.set)
         self.textbox.grid(row=0, column=0, sticky="nsew")
         self.textvsb.grid(row=0, column=1, sticky="ns")
@@ -46,36 +47,43 @@ class TrafficGUI:
         self.rightframe.grid_columnconfigure(0, weight=1)
         self.rightframe.pack(side="top", fill="both", expand=True)
 
-
+        #Create combobox header Type
         self.label = Label(leftframe, text="Type")
         self.label.pack()
 
         Type = tk.StringVar()
         Year = tk.StringVar()
         self.typeCombox = ttk.Combobox(leftframe, width=14, textvariable=Type)
-        
+
+        #Create combobox for type
         self.typeCombox['values']=("Traffic Volume", "Traffic Incidents")
         self.typeCombox.pack()
 
+        #Create combobox header year
         self.label2 = Label(leftframe, text="Year")
         self.label2.pack()
-
+        
+        #Create combobox for year
         self.yearCombox = ttk.Combobox(leftframe, width=14, textvariable=Year)
         self.yearCombox['values']=("2018", "2017", "2016")
         self.yearCombox.pack()
 
+        #create button for read functionality
         self.read_button = Button(leftframe, text="Read", command=self.read)
         self.read_button.pack()
 
+        #create button for sort functionality
         self.sort_button = Button(leftframe, text="Sort", command=self.sort)
         self.sort_button.pack()
  
         self.analysis_button = Button(leftframe, text="Analysis", command=self.generate_plot)
         self.analysis_button.pack()
 
+        #Create button for map
         self.map_button = Button(leftframe, text="Map", command = self.generate_map)
         self.map_button.pack()
 
+        #Create status box
         self.statustitle = Label(leftframe,text="Read Status")
         self.statustitle.pack()
         self.msg_box = tk.Text(leftframe,width=10,height=5,wrap="none")
@@ -169,40 +177,53 @@ class TrafficGUI:
     #Reads corresponding collection based on combox selections
     def read(self):
         self.check_active_plot()
-        pd.set_option('display.max_rows',None,'display.max_columns',10)
+        pd.set_option('display.max_rows',None)
+        pd.set_option('display.max_columns',None)
         pd.options.display.width=None
+        #Connect to mongodb client
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
-        trafficdb = myclient["TrafficData"] #all the databases are in here. 
-        
-        #handle volume selection
+        #Grab database
+        trafficdb = myclient["TrafficData"] 
+
+        #Handle volume combobox selection
         if(self.typeCombox.get() == "Traffic Volume"):
+            #Handle year combobox selection
             if(self.yearCombox.get() == "2018"):
-                flow2018 = trafficdb["TrafficFlow2018"] #grabbing a data collection
-                flowdata2018 = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0})] #pull data from collection
-                flowtable2018 = pd.DataFrame(flowdata2018) #formats collection 
+                #Grab collection from TrafficData database
+                flow2018 = trafficdb["TrafficFlow2018"] 
+                #pull data from collection
+                flowdata2018 = [data for data in flow2018.find({},{"_id": 0, "year":0})] 
+                #formats collection 
+                flowtable2018 = pd.DataFrame(flowdata2018)
+                #Clear textbox
+                self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
+                #Update textbox
                 self.textbox.insert(tk.END,str(flowtable2018))
                 self.textbox.insert(tk.END, '\n')
+                #Make textbox readonly
                 self.textbox.configure(state = 'disabled')
+                #Update status bar
                 self.msg_box.delete("1.0","end")
                 self.msg_box.insert(tk.END, "Read"+"\n"+"Successful")
             elif(self.yearCombox.get() == "2017"):
+                flow2017= trafficdb["TrafficFlow2017"]
+                flowdata2017 = [data for data in flow2017.find({},{"_id": 0, "year":0})]
+                flowtable2017 = pd.DataFrame(flowdata2017)
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
-                flow2017= trafficdb["TrafficFlow2017"]
-                flowdata2017 = [data for data in flow2017.find({},{"_id": 0, "year":0,"multilinestring":0})]
-                flowtable2017 = pd.DataFrame(flowdata2017)
                 self.textbox.insert(tk.END,str(flowtable2017))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
                 self.msg_box.insert(tk.END, "Read"+"\n"+"Successful")
             elif(self.yearCombox.get() == "2016"):
+                
+                flow2016= trafficdb["TrafficFlow2016"]
+                flowdata2016 = [data for data in flow2016.find({},{"_id": 0, "year":0})]
+                flowtable2016 = pd.DataFrame(flowdata2016)
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
-                flow2016= trafficdb["TrafficFlow2016"]
-                flowdata2016 = [data for data in flow2016.find({},{"_id": 0, "year":0,"multilinestring":0})]
-                flowtable2016 = pd.DataFrame(flowdata2016)
                 self.textbox.insert(tk.END,str(flowtable2016))
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
@@ -212,11 +233,11 @@ class TrafficGUI:
                 self.msg_box.delete("1.0","end")
                 self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"year")
                 
-        #Handle Incident selection        
+        #Repeat for incident selection        
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
                 incidents2018 = trafficdb["TrafficIncidents2018"]
-                incidentdata2018 = [data for data in incidents2018.find({},{"_id": 0, "year":0,"id":0,"Longitude":0,"Latitude":0})]
+                incidentdata2018 = [data for data in incidents2018.find({},{"_id": 0, "year":0,"id":0})]
                 incidenttable2018 = pd.DataFrame(incidentdata2018)
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
@@ -266,6 +287,7 @@ class TrafficGUI:
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
                 flow2018 = trafficdb["TrafficFlow2018"]
+                #Sort collection based on volume in decending order (ie max on top)
                 flowdata2018 = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1)]
                 flowtable2018 = pd.DataFrame(flowdata2018)
                 self.textbox.configure(state = 'normal')
@@ -305,10 +327,14 @@ class TrafficGUI:
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
                 incidents = trafficdb["TrafficIncidents2018"]
+                #Create list of total incidents at each "INFO LOCATION" 
                 incidents = list(incidents.aggregate([
+                    #group data by Incident info and get the the sum of each group
                     {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
+                    #Sort by decending number of incidents
                     {"$sort": {"count" : -1} },
                 ]))
+                #Update textbox and status bar
                 incidents = [data for data in incidents]
                 incidents = pd.DataFrame(incidents)
                 self.textbox.configure(state = 'normal')
@@ -356,7 +382,7 @@ class TrafficGUI:
             self.msg_box.delete("1.0","end")
             self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"Traffic"+"\n"+"Statistic")
     
-    #Returns max value for dataset based on combox selections
+    #Returns list of max value from sorted tables and corresponding year
     def getMax(self):
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
         trafficdb = myclient.TrafficData
@@ -424,5 +450,5 @@ class TrafficGUI:
                 
         
 root =Tk()
-my_gui = TrafficGUI(root)
+my_gui = TrafficApp(root)
 root.mainloop()
