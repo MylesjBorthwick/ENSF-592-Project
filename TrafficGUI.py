@@ -99,7 +99,7 @@ class TrafficApp:
         if(values == [-1,-1,-1]):
             self.matplot_active = False
             self.rightframe.pack()
-        else
+        else:
             f = plt.figure(figsize=(8,6))
 
             # linear
