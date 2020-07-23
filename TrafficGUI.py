@@ -98,9 +98,7 @@ class TrafficApp:
             self.matplot_active = False
             self.rightframe.pack()
         else:
-
-            f = Figure(figsize=(6,6), dpi=100)
-            f = plt.figure()
+            f = plt.figure(figsize=(8,6))
 
             # linear
             plt.subplot(111)
