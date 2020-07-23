@@ -7,11 +7,12 @@ import tkinter.scrolledtext as tkst
 import pandas as pd
 import locale
 import Map as mappy
+import DataAnalysis as dataA
 
 
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
-class MyFirstGUI:
+class TrafficGUI:
     def __init__(self, master):
         
         self.master = master
@@ -59,7 +60,7 @@ class MyFirstGUI:
         self.sort_button = Button(leftframe, text="Sort", command=self.sort)
         self.sort_button.pack()
 
-        self.analysis_button = Button(leftframe, text="Analysis")
+        self.analysis_button = Button(leftframe, text="Analysis",command = self.getMax)
         self.analysis_button.pack()
 
         self.map_button = Button(leftframe, text="Map", command = self.generate_map)
@@ -103,8 +104,6 @@ class MyFirstGUI:
         my_map.save_map()
 
  
-
-
     #Reads corresponding collection based on combox selections
     def read(self):
         pd.set_option('display.max_rows',None,'display.max_columns',10)
@@ -284,14 +283,20 @@ class MyFirstGUI:
                 flow2018 = trafficdb["TrafficFlow2018"]
                 maxflow = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
                 maxflow = [document["volume"] for document in maxflow]
-                return maxflow([0])
+                plotValues = []
+                plotValues.insert(0,maxflow[0])
+                plotValues.insert(1, 2018)
+                return plotValues
                 
 
             elif(self.yearCombox.get() == "2017"):
                 flow2017= trafficdb["TrafficFlow2017"]
                 maxflow = [data for data in flow2017.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
                 maxflow = [document["volume"] for document in maxflow]
-                return maxflow([0])
+                plotValues = []
+                plotValues.insert(0,maxflow[0])
+                plotValues.insert(1, 2017)
+                return plotValues
                 
                 
             elif(self.yearCombox.get() == "2016"):
@@ -299,7 +304,10 @@ class MyFirstGUI:
                 flow2016= trafficdb["TrafficFlow2016"]
                 maxflow = [data for data in flow2016.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
                 maxflow = [document["volume"] for document in maxflow]
-                return maxflow([0])
+                plotValues = []
+                plotValues.insert(0,maxflow[0])
+                plotValues.insert(1, 2016)
+                return plotValues
                 
         #Handle Incident selection based on year     
         elif (self.typeCombox.get() == "Traffic Incidents"):
@@ -311,7 +319,10 @@ class MyFirstGUI:
                 ]))
                 incidentmax = [data for data in incidents]
                 incidentmax = [document["count"] for document in incidentmax]
-                return incidentmax[0]
+                plotValues = []
+                plotValues.insert(0,incidentmax[0])
+                plotValues.insert(1, 2018)
+                return plotValues
                 
                
                 
@@ -323,7 +334,10 @@ class MyFirstGUI:
                 ]))
                 incidentmax = [data for data in incidents]
                 incidentmax = [document["count"] for document in incidentmax]
-                return incidentmax[0]
+                plotValues = []
+                plotValues.insert(0,incidentmax[0])
+                plotValues.insert(1, 2017)
+                return plotValues
                 
                
                 
@@ -335,10 +349,13 @@ class MyFirstGUI:
                 ]))
                 incidentmax = [data for data in incidents]
                 incidentmax = [document["count"] for document in incidentmax]
-                return incidentmax[0]
+                plotValues = []
+                plotValues.insert(0,incidentmax[0])
+                plotValues.insert(1, 2016)
+                return plotValues
                
-                
-        
+   #             
+   #     
 root =Tk()
-my_gui = MyFirstGUI(root)
+my_gui = TrafficGUI(root)
 root.mainloop()
