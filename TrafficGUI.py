@@ -7,16 +7,20 @@ import tkinter.scrolledtext as tkst
 import pandas as pd
 import locale
 import Map as mappy
-
+import matplotlib
+matplotlib.use("TkAgg")
+from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
+from matplotlib.figure import Figure
 
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
 class MyFirstGUI:
     def __init__(self, master):
         
+       
         self.master = master
         master.title("TrafficApp")
-
+        self.matplot_active = False
         leftframe = Frame(master)
         leftframe.pack(side = LEFT)
 
@@ -58,8 +62,8 @@ class MyFirstGUI:
 
         self.sort_button = Button(leftframe, text="Sort", command=self.sort)
         self.sort_button.pack()
-
-        self.analysis_button = Button(leftframe, text="Analysis")
+ 
+        self.analysis_button = Button(leftframe, text="Analysis", command=self.generate_plot)
         self.analysis_button.pack()
 
         self.map_button = Button(leftframe, text="Map", command = self.generate_map)
@@ -69,7 +73,27 @@ class MyFirstGUI:
         self.statustitle.pack()
         self.msg_box = tk.Text(leftframe,width=10,height=5,wrap="none")
         self.msg_box.pack()
- 
+        
+
+    def generate_plot(self):
+        self.check_active_plot()
+        self.rightframe.pack_forget()
+        values = self.getMax()
+        print(values)
+        f = Figure(figsize=(5,5), dpi=100)
+        a = f.add_subplot(111)
+        
+        a.plot([2016,2017,2018],values)
+
+        self.rightframe.canvas = FigureCanvasTkAgg(f, master=root)  # A tk.DrawingArea.
+        self.rightframe.canvas.draw ()
+        self.rightframe.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        #if(self.typeCombox.get() == "Traffic Volume"):
+        self.rightframe.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+        self.matplot_active = True
+        
+
+
 
     def generate_map(self):
         my_map = mappy.Map()
@@ -104,9 +128,19 @@ class MyFirstGUI:
 
  
 
+    def check_active_plot(self):
+        if(self.matplot_active):
+            self.rightframe.canvas.get_tk_widget().destroy()
+            self.matplot_active = False
+            self.rightframe.pack()
+
+
+
+
 
     #Reads corresponding collection based on combox selections
     def read(self):
+        self.check_active_plot()
         pd.set_option('display.max_rows',None,'display.max_columns',10)
         pd.options.display.width=None
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
@@ -185,6 +219,7 @@ class MyFirstGUI:
 
     #Sorts selected dataset and appends the sorted list to textbox
     def sort(self):
+        self.check_active_plot()
         pd.set_option('display.max_rows',None)
         pd.set_option('display.max_colwidth',90)
         myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
@@ -280,63 +315,59 @@ class MyFirstGUI:
         trafficdb = myclient.TrafficData
         #Handle volume selection based on year
         if(self.typeCombox.get() == "Traffic Volume"):
-            if(self.yearCombox.get() == "2018"):
-                flow2018 = trafficdb["TrafficFlow2018"]
-                maxflow = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
-                maxflow = [document["volume"] for document in maxflow]
-                return maxflow([0])
-                
-
-            elif(self.yearCombox.get() == "2017"):
-                flow2017= trafficdb["TrafficFlow2017"]
-                maxflow = [data for data in flow2017.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
-                maxflow = [document["volume"] for document in maxflow]
-                return maxflow([0])
-                
-                
-            elif(self.yearCombox.get() == "2016"):
-                
+                max_values =  []
                 flow2016= trafficdb["TrafficFlow2016"]
                 maxflow = [data for data in flow2016.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
                 maxflow = [document["volume"] for document in maxflow]
-                return maxflow([0])
+                max_values.append(maxflow[0])
+            
+                
+
+                flow2017= trafficdb["TrafficFlow2017"]
+                maxflow = [data for data in flow2017.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
+                maxflow = [document["volume"] for document in maxflow]
+                max_values.append(maxflow[0])
+                
+                flow2018 = trafficdb["TrafficFlow2018"]
+                maxflow = [data for data in flow2018.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
+                maxflow = [document["volume"] for document in maxflow]
+                max_values.append(maxflow[0])
+                return max_values
+
+                
                 
         #Handle Incident selection based on year     
         elif (self.typeCombox.get() == "Traffic Incidents"):
-            if(self.yearCombox.get() == "2018"):
-                incidents = trafficdb["TrafficIncidents2018"]
-                incidents = list(incidents.aggregate([
+                max_values =  []
+  
+                incidents2016 = trafficdb.TrafficIncidents2016
+                incidents2016 = list(incidents2016.aggregate([
                     {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
                     {"$sort": {"count" : -1} },
                 ]))
-                incidentmax = [data for data in incidents]
+                incidentmax = [data for data in incidents2016]
                 incidentmax = [document["count"] for document in incidentmax]
-                return incidentmax[0]
+                max_values.append(incidentmax[0])
                 
-               
-                
-            elif(self.yearCombox.get() == "2017"):
-                incidents = trafficdb["TrafficIncidents2017"]
-                incidents = list(incidents.aggregate([
+                incidents2017 = trafficdb["TrafficIncidents2017"]
+                incidents2017 = list(incidents2017.aggregate([
                     {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
                     {"$sort": {"count" : -1} },
                 ]))
-                incidentmax = [data for data in incidents]
+                incidentmax = [data for data in incidents2017]
                 incidentmax = [document["count"] for document in incidentmax]
-                return incidentmax[0]
+                max_values.append(incidentmax[0])
                 
-               
-                
-            elif(self.yearCombox.get() == "2016"):
-                incidents = trafficdb.TrafficIncidents2016
-                incidents = list(incidents.aggregate([
+                incidents2018 = trafficdb["TrafficIncidents2018"]
+                incidents2018 = list(incidents2018.aggregate([
                     {"$group" : { "_id": "$INCIDENT INFO", "count": { "$sum": 1 } } }, 
                     {"$sort": {"count" : -1} },
                 ]))
-                incidentmax = [data for data in incidents]
+                incidentmax = [data for data in incidents2018]
                 incidentmax = [document["count"] for document in incidentmax]
-                return incidentmax[0]
-               
+                max_values.append(incidentmax[0])
+                
+                return max_values
                 
         
 root =Tk()
