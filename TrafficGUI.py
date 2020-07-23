@@ -9,7 +9,7 @@ import matplotlib
 matplotlib.use("TkAgg")
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
-
+import matplotlib.pyplot as plt
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
 #Traffic GUI class creates interface and maps commands to GUI elements
@@ -99,19 +99,29 @@ class TrafficApp:
             self.rightframe.pack()
         else:
 
-            f = Figure(figsize=(5,5), dpi=100)
-            plt = f.add_subplot(111)
-        
-            plt.plot([2016,2017,2018],values)
-            #f.xlabel('year')
-            #if(self.typeCombox.get() == "Traffic Volume"):
-            #    f.ylabel('Traffic Volume')
-            #else:
-            #    f.ylabel('Traffic Incidents')
+            f = Figure(figsize=(6,6), dpi=100)
+            f = plt.figure()
+
+            # linear
+            plt.subplot(111)
+            plt.plot(['2016','2017','2018'],values)
+            plt.yscale('linear')
+            
+            
+            plt.xlabel('Year')
+            if(self.typeCombox.get() == "Traffic Incidents"):
+                plt.ylabel('Traffic Incidents')
+                plt.title('Incident plot')
+            else:
+                plt.ylabel('Flow Volume')
+                plt.title('Flow plot')   
+            plt.grid(True)
+            
+            #a = f.add_subplot(111)
+            #a.plot([2016,2017,2018],values)
             self.rightframe.canvas = FigureCanvasTkAgg(f, master=root)  # A tk.DrawingArea.
             self.rightframe.canvas.draw ()
             self.rightframe.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-        #if(self.typeCombox.get() == "Traffic Volume"):
             self.rightframe.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
             self.msg_box.delete("1.0","end")
             self.msg_box.insert(tk.END, "Analysis"+"\n"+"Successful")
