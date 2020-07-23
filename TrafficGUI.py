@@ -167,9 +167,6 @@ class TrafficApp:
 
         #Handle volume combobox selection
         if(self.typeCombox.get() == "Traffic Volume"):
-            pd.set_option('display.max_rows',None)
-            pd.set_option('display.max_columns',None)
-            pd.options.display.width=None
             #Handle year combobox selection
             if(self.yearCombox.get() == "2018"):
                 #Grab collection from TrafficData database
