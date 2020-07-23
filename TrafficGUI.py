@@ -14,16 +14,23 @@ from matplotlib.figure import Figure
 
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
-class MyFirstGUI:
+#Traffic GUI class creates interface and maps commands to GUI elements
+class TrafficGUI:
     def __init__(self, master):
         
        
         self.master = master
         master.title("TrafficApp")
         self.matplot_active = False
+        #Create window title
+        self.master = master
+        master.title("TrafficApp")
+
+        #Create left Frame in GUI window
         leftframe = Frame(master)
         leftframe.pack(side = LEFT)
 
+        #Create
         self.rightframe = Frame(master)
         self.rightframe.pack(side = RIGHT)
 
@@ -110,7 +117,7 @@ class MyFirstGUI:
                 flow = trafficdb["TrafficFlow2016"]
             for data in flow.find({},{"_id": 0, "year":0}):
                 my_map.add_line_coordinates(data['multilinestring'],'section: '+ data['SECNAME'] +' volume: '+str(data['volume']),data['volume'])
-       
+            
         elif(self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"): 
                 incidents = trafficdb["TrafficIncidents2018"] #grabbing a data collection
@@ -125,7 +132,8 @@ class MyFirstGUI:
                 my_map.add_marker(data['Latitude'],data['Longitude'],data['INCIDENT INFO']+': '+data['DESCRIPTION'])
             
         my_map.save_map()
-
+        self.msg_box.delete("1.0","end")
+        self.msg_box.insert(tk.END, "Mapping"+"\n"+"Succesful")
  
 
     def check_active_plot(self):
@@ -371,5 +379,5 @@ class MyFirstGUI:
                 
         
 root =Tk()
-my_gui = MyFirstGUI(root)
+my_gui = TrafficGUI(root)
 root.mainloop()
