@@ -2,8 +2,6 @@ from tkinter import Tk, Label, Button, ttk, LEFT, RIGHT, Frame, WORD
 import folium
 import tkinter as tk
 from pymongo import MongoClient
-import tkinter.scrolledtext as tkst
-#from pandastable import Table
 import pandas as pd
 import locale
 import Map as mappy
@@ -220,7 +218,7 @@ class TrafficApp:
             elif(self.yearCombox.get() == "2016"):
                 
                 flow2016= trafficdb["TrafficFlow2016"]
-                flowdata2016 = [data for data in flow2016.find({},{"_id": 0, "year":0})]
+                flowdata2016 = [data for data in flow2016.find({},{"_id": 0, "year_vol":0})]
                 flowtable2016 = pd.DataFrame(flowdata2016)
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
