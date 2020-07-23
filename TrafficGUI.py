@@ -137,12 +137,16 @@ class TrafficApp:
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
                 flow = trafficdb["TrafficFlow2018"]
+                for data in flow.find({},{"_id": 0, "year":0}):
+                    my_map.add_line_coordinates(data['multilinestring'],'section: '+ data['SECNAME'] +' volume: '+str(data['volume']),data['volume'])
             elif(self.yearCombox.get() == "2017"):
                 flow = trafficdb["TrafficFlow2017"]
+                for data in flow.find({},{"_id": 0, "year":0}):
+                    my_map.add_line_coordinates(data['multilinestring'],'section: '+ data['segment_name'] +' volume: '+str(data['volume']),data['volume'])
             elif(self.yearCombox.get() == "2016"):
                 flow = trafficdb["TrafficFlow2016"]
-            for data in flow.find({},{"_id": 0, "year":0}):
-                my_map.add_line_coordinates(data['multilinestring'],'section: '+ data['SECNAME'] +' volume: '+str(data['volume']),data['volume'])
+                for data in flow.find({},{"_id": 0, "year":0}):
+                    my_map.add_line_coordinates(data['multilinestring'],'section: '+ data['secname'] +' volume: '+str(data['volume']),data['volume'])
             self.msg_box.delete("1.0","end")
             self.msg_box.insert(tk.END, "Mapping"+"\n"+"Successful")
             
@@ -450,7 +454,11 @@ class TrafficApp:
 
         else:
             self.msg_box.delete("1.0","end")
+<<<<<<< HEAD
             self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select "+"a"+"\n"+"Traffic"+"\n"+"Statistic")
+=======
+            self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"Traffic"+"\n"+"Statistic")
+>>>>>>> 72a954824a4898a13940aaa92ab39a73e1b10599
             return [-1,-1,-1]
             
                 
