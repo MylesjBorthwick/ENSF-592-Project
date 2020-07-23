@@ -80,24 +80,36 @@ class TrafficGUI:
         self.statustitle.pack()
         self.msg_box = tk.Text(leftframe,width=10,height=5,wrap="none")
         self.msg_box.pack()
+
         
 
     def generate_plot(self):
         self.check_active_plot()
         self.rightframe.pack_forget()
-        values = self.getMax()
-        print(values)
-        f = Figure(figsize=(5,5), dpi=100)
-        a = f.add_subplot(111)
-        
-        a.plot([2016,2017,2018],values)
-
-        self.rightframe.canvas = FigureCanvasTkAgg(f, master=root)  # A tk.DrawingArea.
-        self.rightframe.canvas.draw ()
-        self.rightframe.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
-        #if(self.typeCombox.get() == "Traffic Volume"):
-        self.rightframe.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
         self.matplot_active = True
+        values = self.getMax()
+        if(values == [-1,-1,-1]):
+            self.matplot_active = False
+            self.rightframe.pack()
+        else:
+
+            f = Figure(figsize=(5,5), dpi=100)
+            plt = f.add_subplot(111)
+        
+            plt.plot([2016,2017,2018],values)
+            #f.xlabel('year')
+            #if(self.typeCombox.get() == "Traffic Volume"):
+            #    f.ylabel('Traffic Volume')
+            #else:
+            #    f.ylabel('Traffic Incidents')
+            self.rightframe.canvas = FigureCanvasTkAgg(f, master=root)  # A tk.DrawingArea.
+            self.rightframe.canvas.draw ()
+            self.rightframe.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
+        #if(self.typeCombox.get() == "Traffic Volume"):
+            self.rightframe.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
+            self.msg_box.delete("1.0","end")
+            self.msg_box.insert(tk.END, "Analysis"+"\n"+"Successful")
+        
         
 
 
@@ -117,6 +129,8 @@ class TrafficGUI:
                 flow = trafficdb["TrafficFlow2016"]
             for data in flow.find({},{"_id": 0, "year":0}):
                 my_map.add_line_coordinates(data['multilinestring'],'section: '+ data['SECNAME'] +' volume: '+str(data['volume']),data['volume'])
+            self.msg_box.delete("1.0","end")
+            self.msg_box.insert(tk.END, "Mapping"+"\n"+"Successful")
             
         elif(self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"): 
@@ -131,9 +145,15 @@ class TrafficGUI:
             for data in incidents.find({},{'Count':0,'location':0, 'QUADRANT':0,'MODIFIED_DT':0, "_id": 0, "year":0,"id":0,'START_DT':0}):
                 my_map.add_marker(data['Latitude'],data['Longitude'],data['INCIDENT INFO']+': '+data['DESCRIPTION'])
             
+            self.msg_box.delete("1.0","end")
+            self.msg_box.insert(tk.END, "Mapping"+"\n"+"Successful")
+
+        else:
+            self.msg_box.delete("1.0","end")
+            self.msg_box.insert(tk.END, "Error:"+"\n"+ "Insufficient"+"\n"+ "information,"+"\n"+ "displaying"+"\n"+ "empty"+"\n"+ "map.")
+            
         my_map.save_map()
-        self.msg_box.delete("1.0","end")
-        self.msg_box.insert(tk.END, "Mapping"+"\n"+"Succesful")
+
  
 
     def check_active_plot(self):
@@ -165,7 +185,7 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Successful")
             elif(self.yearCombox.get() == "2017"):
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
@@ -176,7 +196,7 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Successful")
             elif(self.yearCombox.get() == "2016"):
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
@@ -187,7 +207,10 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Successful")
+            else:
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"year")
                 
         #Handle Incident selection        
         elif (self.typeCombox.get() == "Traffic Incidents"):
@@ -201,7 +224,7 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Successful")
             elif(self.yearCombox.get() == "2017"):
                 incidents2017 = trafficdb["TrafficIncidents2017"]
                 incidentdata2017 = [data for data in incidents2017.find({},{"_id": 0, "year":0})]
@@ -212,7 +235,7 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Successful")
             elif(self.yearCombox.get() == "2016"):
                 incidents2016 = trafficdb["TrafficIncidents2016"]
                 incidentdata2016 = [data for data in incidents2016.find({},{"_id": 0, "year":0})]
@@ -223,7 +246,14 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Read"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Read"+"\n"+"Successful")
+            else:
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"year")
+
+        else:
+            self.msg_box.delete("1.0","end")
+            self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"Traffic"+"\n"+"Statistic")
 
     #Sorts selected dataset and appends the sorted list to textbox
     def sort(self):
@@ -244,7 +274,7 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Successful")
             elif(self.yearCombox.get() == "2017"):
                 self.textbox.configure(state = 'normal')
                 self.textbox.delete("1.0","end")
@@ -255,7 +285,7 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Successful")
                 
             elif(self.yearCombox.get() == "2016"):
                 self.textbox.configure(state = 'normal')
@@ -267,7 +297,10 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Successful")
+            else:
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"year")
         #Handle Incident selection        
         elif (self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"):
@@ -284,7 +317,7 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Successful")
                 
             elif(self.yearCombox.get() == "2017"):
                 incidents = trafficdb["TrafficIncidents2017"]
@@ -300,7 +333,7 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Successful")
             elif(self.yearCombox.get() == "2016"):
                 incidents = trafficdb.TrafficIncidents2016
                 incidents = list(incidents.aggregate([
@@ -315,7 +348,13 @@ class TrafficGUI:
                 self.textbox.insert(tk.END, '\n')
                 self.textbox.configure(state = 'disabled')
                 self.msg_box.delete("1.0","end")
-                self.msg_box.insert(tk.END, "Sort"+"\n"+"Succesful")
+                self.msg_box.insert(tk.END, "Sort"+"\n"+"Successful")
+            else:
+                self.msg_box.delete("1.0","end")
+                self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"year")
+        else:
+            self.msg_box.delete("1.0","end")
+            self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"Traffic"+"\n"+"Statistic")
     
     #Returns max value for dataset based on combox selections
     def getMax(self):
@@ -376,6 +415,12 @@ class TrafficGUI:
                 max_values.append(incidentmax[0])
                 
                 return max_values
+
+        else:
+            self.msg_box.delete("1.0","end")
+            self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select"+"\n"+"a"+"\n"+"Traffic"+"\n"+"Statistic")
+            return [-1,-1,-1]
+            
                 
         
 root =Tk()
