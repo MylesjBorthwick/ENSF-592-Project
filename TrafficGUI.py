@@ -12,6 +12,10 @@ from matplotlib.figure import Figure
 import matplotlib.pyplot as plt
 #https://python-textbok.readthedocs.io/en/1.0/Introduction_to_GUI_Programming.html 
 
+"""This App reads traffic data from a mongodb database and uses it to print, sort, analyse and map its data in a GUI window.
+Created by Ken Loughery and Myles Borthwick"""
+
+
 #Traffic GUI class creates interface and maps commands to GUI elements
 class TrafficApp:
     def __init__(self, master):
@@ -88,11 +92,14 @@ class TrafficApp:
         self.msg_box.pack()
 
         
-
+    #Plots graph of max values on y axis and year on x axis
     def generate_plot(self):
+        #Checks if there is already a plot open
         self.check_active_plot()
+        #removes previously loaded content
         self.rightframe.pack_forget()
         self.matplot_active = True
+        #Grabs max values from getmax function
         values = self.getMax()
         if(values == [-1,-1,-1]):
             self.matplot_active = False
@@ -100,13 +107,14 @@ class TrafficApp:
         else:
             f = plt.figure(figsize=(8,6))
 
-            # linear
+            # Plot years on x axis
             plt.subplot(111)
             plt.plot(['2016','2017','2018'],values)
             plt.yscale('linear')
-            
-            
+            #Axis header
             plt.xlabel('Year')
+
+            #Plots maxvalues on y axis dependant on data type
             if(self.typeCombox.get() == "Traffic Incidents"):
                 plt.ylabel('Traffic Incidents')
                 plt.title('Incident plot')
@@ -115,9 +123,8 @@ class TrafficApp:
                 plt.title('Flow plot')   
             plt.grid(True)
             
-            #a = f.add_subplot(111)
-            #a.plot([2016,2017,2018],values)
-            self.rightframe.canvas = FigureCanvasTkAgg(f, master=root)  # A tk.DrawingArea.
+            #Pack canvas into GUI and update status box
+            self.rightframe.canvas = FigureCanvasTkAgg(f, master=root)  
             self.rightframe.canvas.draw ()
             self.rightframe.canvas.get_tk_widget().pack(side=tk.BOTTOM, fill=tk.BOTH, expand=True)
             self.rightframe.canvas._tkcanvas.pack(side=tk.TOP, fill=tk.BOTH, expand=True)
@@ -127,18 +134,22 @@ class TrafficApp:
         
 
 
-
+    #Opens an HTML map file in browser displaying data on map
     def generate_map(self):
         my_map = mappy.Map()
-    
-        myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
-        trafficdb = myclient["TrafficData"] #all the databases are in here. 
 
+        #access database
+        myclient = MongoClient("mongodb+srv://MylesBorthwick:8557mjb@trafficdatacluster.inrlg.mongodb.net/test?authSource=admin&replicaSet=atlas-86pvzi-shard-0&readPreference=primary&appname=MongoDB%20Compass%20Community&ssl=true")
+        trafficdb = myclient["TrafficData"]  
+
+        #Combobox identification
         if(self.typeCombox.get() == "Traffic Volume"):
             if(self.yearCombox.get() == "2018"):
                 flow = trafficdb["TrafficFlow2018"]
                 for data in flow.find({},{"_id": 0, "year":0}):
+                    #Add line on map based on data
                     my_map.add_line_coordinates(data['multilinestring'],'section: '+ data['SECNAME'] +' volume: '+str(data['volume']),data['volume'])
+            #Repeat for all years           
             elif(self.yearCombox.get() == "2017"):
                 flow = trafficdb["TrafficFlow2017"]
                 for data in flow.find({},{"_id": 0, "year":0}):
@@ -147,29 +158,34 @@ class TrafficApp:
                 flow = trafficdb["TrafficFlow2016"]
                 for data in flow.find({},{"_id": 0, "year":0}):
                     my_map.add_line_coordinates(data['multilinestring'],'section: '+ data['secname'] +' volume: '+str(data['volume']),data['volume'])
+            #update status bar
             self.msg_box.delete("1.0","end")
             self.msg_box.insert(tk.END, "Mapping"+"\n"+"Successful")
-            
+        
+        #Adds marker for incident on map (will be updated for max accident areas)
         elif(self.typeCombox.get() == "Traffic Incidents"):
             if(self.yearCombox.get() == "2018"): 
-                incidents = trafficdb["TrafficIncidents2018"] #grabbing a data collection
+                incidents = trafficdb["TrafficIncidents2018"] 
    
             elif(self.yearCombox.get() == "2017"):
-                incidents = trafficdb["TrafficIncidents2017"] #grabbing a data collection
+                incidents = trafficdb["TrafficIncidents2017"] 
  
             elif(self.yearCombox.get() == "2016"):
-                incidents = trafficdb["TrafficIncidents2016"] #grabbing a data collection
+                incidents = trafficdb["TrafficIncidents2016"] 
 
+            #Add marker for data (For max markers, scrub sorted incident)
             for data in incidents.find({},{'Count':0,'location':0, 'QUADRANT':0,'MODIFIED_DT':0, "_id": 0, "year":0,"id":0,'START_DT':0}):
                 my_map.add_marker(data['Latitude'],data['Longitude'],data['INCIDENT INFO']+': '+data['DESCRIPTION'])
-            
+
+            #Update status bar
             self.msg_box.delete("1.0","end")
             self.msg_box.insert(tk.END, "Mapping"+"\n"+"Successful")
 
         else:
             self.msg_box.delete("1.0","end")
             self.msg_box.insert(tk.END, "Error:"+"\n"+ "Insufficient"+"\n"+ "information,"+"\n"+ "displaying"+"\n"+ "empty"+"\n"+ "map.")
-            
+        
+        #Save map as html and open in browser
         my_map.save_map()
 
  
@@ -398,13 +414,13 @@ class TrafficApp:
         trafficdb = myclient.TrafficData
         #Handle volume selection based on year
         if(self.typeCombox.get() == "Traffic Volume"):
+                #Create list to add max values from each year too
                 max_values =  []
                 flow2016= trafficdb["TrafficFlow2016"]
+                #limit to first element in sorted list
                 maxflow = [data for data in flow2016.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
                 maxflow = [document["volume"] for document in maxflow]
                 max_values.append(maxflow[0])
-            
-                
 
                 flow2017= trafficdb["TrafficFlow2017"]
                 maxflow = [data for data in flow2017.find({},{"_id": 0, "year":0,"multilinestring":0}).sort("volume",-1).limit(1)]
@@ -418,9 +434,9 @@ class TrafficApp:
                 return max_values
 
                 
-                
         #Handle Incident selection based on year     
         elif (self.typeCombox.get() == "Traffic Incidents"):
+                #Adds max incidents to list of maxvalues for each year
                 max_values =  []
   
                 incidents2016 = trafficdb.TrafficIncidents2016
@@ -453,12 +469,9 @@ class TrafficApp:
                 return max_values
 
         else:
+            #Display error in status bar
             self.msg_box.delete("1.0","end")
-<<<<<<< HEAD
-            self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select "+"a"+"\n"+"Traffic"+"\n"+"Statistic")
-=======
             self.msg_box.insert(tk.END, "Error:"+"\n"+"Please"+"\n"+"select a"+"\n"+"Traffic"+"\n"+"Statistic")
->>>>>>> 72a954824a4898a13940aaa92ab39a73e1b10599
             return [-1,-1,-1]
             
                 
