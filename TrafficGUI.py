@@ -189,7 +189,7 @@ class TrafficApp:
         my_map.save_map()
 
  
-
+    #checks if there is a plot in the frame, and if so, removes it and loads the original textwindow back. 
     def check_active_plot(self):
         if(self.matplot_active):
             self.rightframe.canvas.get_tk_widget().destroy()

@@ -3,6 +3,8 @@ import string
 import webbrowser
 import os 
 
+"""This class contains the functionality to map coordinates using folium into an html file, and load that file. It is called from the GUI window. 
+Created by Ken Loughery and Myles Borthwick"""
 
 
 
